@@ -2,7 +2,7 @@
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-CREATE TABLE photos (
+CREATE TABLE photo (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     owner_id UUID NOT NULL,
     description VARCHAR(255),
@@ -12,4 +12,4 @@ CREATE TABLE photos (
 );
 
 -- +goose Down
-DROP TABLE photos;
+DROP TABLE photo;

@@ -13,7 +13,7 @@ import (
 )
 
 const createPhoto = `-- name: CreatePhoto :one
-INSERT INTO photos (owner_id, description, photo_url)
+INSERT INTO photo (owner_id, description, photo_url)
 VALUES ($1, $2, $3)
 RETURNING id, owner_id, description, photo_url, created_at, updated_at
 `

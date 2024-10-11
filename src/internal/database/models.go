@@ -19,3 +19,9 @@ type Photo struct {
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 }
+
+type PhotoMetadatum struct {
+	ID        uuid.UUID
+	Location  interface{}
+	CreatedAt sql.NullTime
+}
