@@ -91,10 +91,11 @@ func New() *App {
 
 	// Initialize repositories
 	photoRepo := repositories.NewPhotoRepo(databaseConn)
+	photoMetadataRepo := repositories.NewPhotoMetadataRepo(databaseConn)
 
 	// Initialize services
 	s3UploaderService := services.NewS3Uploader(s3Conn, awsBucket)
-	photoService := services.NewPhotoService(photoRepo, s3UploaderService)
+	photoService := services.NewPhotoService(photoRepo, s3UploaderService, photoMetadataRepo)
 
 	// Initialize handlers
 	photoHandler := handler.NewPhotoHandler(photoService)

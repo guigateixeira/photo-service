@@ -16,14 +16,18 @@ import (
 type PhotoService struct {
 	repo                interfaces.IPhotoRepository
 	fileUploaderService interfaces.IFileUpload
+	photoMetadataRepo   interfaces.IPhotoMetadataRepository
 }
 
-func NewPhotoService(repo interfaces.IPhotoRepository, fileUploaderService interfaces.IFileUpload) *PhotoService {
-	return &PhotoService{repo: repo, fileUploaderService: fileUploaderService}
+func NewPhotoService(
+	repo interfaces.IPhotoRepository,
+	fileUploaderService interfaces.IFileUpload,
+	photoMetadataRepo interfaces.IPhotoMetadataRepository,
+) *PhotoService {
+	return &PhotoService{repo: repo, fileUploaderService: fileUploaderService, photoMetadataRepo: photoMetadataRepo}
 }
 
 func (s *PhotoService) CreatePhoto(ctx context.Context, request interfaces.CreatePhotoRequest) (string, error) {
-	// Upload the file to the file storage service
 	uniqueId := uuid.New()
 	uploadRequest := interfaces.UploadFileRequest{
 		UserID:   request.UserID.String(),
@@ -46,8 +50,27 @@ func (s *PhotoService) CreatePhoto(ctx context.Context, request interfaces.Creat
 		return "", err
 	}
 	lat, long, time, err2 := extractExifData(request.FileData)
-	fmt.Printf("Latitude: %v, Longitude: %v, Time: %v\n", lat, long, time)
-	fmt.Printf("err2: %v\n", err2)
+	if err2 != nil {
+		log.Printf("Error extracting EXIF data: %v", err2)
+	}
+	if lat != 0 || long != 0 {
+		log.Printf("EXIF data found. Creating photo metadata... lat %v, long %v, time %v", lat, long, time)
+		photoUUID, err3 := uuid.Parse(photoId)
+		if err3 != nil {
+			log.Printf("Error parsing photo UUID: %v", err3)
+		}
+		req := interfaces.CreatePhotoMetadataRepoRequest{
+			Id:        photoUUID,
+			Latitude:  &lat,
+			Longitude: &long,
+			CreatedAt: &time,
+		}
+		_, err = s.photoMetadataRepo.CreatePhotoMetadata(ctx, req)
+		if err != nil {
+			log.Printf("Error creating photo metadata: %v", err)
+			return "", err
+		}
+	}
 	return photoId, err
 }
 
